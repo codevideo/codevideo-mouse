@@ -1,6 +1,6 @@
 {
   "name": "@fullstackcraftllc/codevideo-mouse",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "description": "A React TypeScript component for a fully auditable, drivable, and replayable virtual mouse.",
   "type": "module",
   "main": "dist/index.js",
@@ -35,7 +35,7 @@
     "typescript": "^5.4.2"
   },
   "peerDependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.0.0"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   }
 }

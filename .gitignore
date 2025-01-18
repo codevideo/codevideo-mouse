@@ -8,4 +8,4 @@ node_modules
 examples/node_modules
 
 # DS_Store
-*.DS_Store
+.DS_Store

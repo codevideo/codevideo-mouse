@@ -2,21 +2,29 @@ import { useEffect, useRef, useState } from "react";
 import { IMouseSnapshot, IMouseState } from "../interfaces/IMouseSnapshot";
 import { IPoint } from "../interfaces/IPoint";
 import { IUseMousePositionReturn } from "../interfaces/IUseMousePositionReturn";
+import { MouseAction } from "@fullstackcraftllc/codevideo-types"
 
 export interface IRecordMousePositionProps {
   recording?: boolean;
   recordWithTrail?: boolean;
   recordTrailLength?: number;
+  replayTrailLength?: number;
+  clearRecording?: boolean;
 }
 
 export const useRecordMousePosition = (
   props: IRecordMousePositionProps
 ): IUseMousePositionReturn => {
-  const { 
-    recording = false, 
-    recordWithTrail = false, 
-    recordTrailLength = 500 
+  const {
+    recording = false,
+    recordWithTrail = false,
+    recordTrailLength = 500,
+    replayTrailLength = 500,
+    clearRecording = false,
   } = props;
+
+  // we always need to record the max trail length
+  const maxTrailLength = Math.max(recordTrailLength, replayTrailLength);
 
   const [mouseState, setMouseState] = useState<IMouseState>({
     position: { x: 0, y: 0 },
@@ -33,6 +41,7 @@ export const useRecordMousePosition = (
 
   const [snapshots, setSnapshots] = useState<IMouseSnapshot[]>([]);
   const [trailPoints, setTrailPoints] = useState<IPoint[]>([]);
+  const [mouseAction, setMouseAction] = useState<MouseAction>({name: "mouse", value: ""})
   const lastTimeRef = useRef<number>(Date.now());
 
   const createSnapshot = (
@@ -72,7 +81,7 @@ export const useRecordMousePosition = (
   useEffect(() => {
     const handleMouseMove = (ev: MouseEvent): void => {
       const newPosition = { x: ev.clientX, y: ev.clientY };
-      
+
       setMouseState(prev => ({
         ...prev,
         position: newPosition
@@ -84,7 +93,7 @@ export const useRecordMousePosition = (
           let totalLength = 0;
           let i = newPoints.length - 1;
 
-          while (i > 0 && totalLength < recordTrailLength) {
+          while (i > 0 && totalLength < maxTrailLength) {
             const dx = newPoints[i].x - newPoints[i - 1].x;
             const dy = newPoints[i].y - newPoints[i - 1].y;
             totalLength += Math.sqrt(dx * dx + dy * dy);
@@ -182,18 +191,29 @@ export const useRecordMousePosition = (
       window.removeEventListener('wheel', handleScroll);
       window.removeEventListener('contextmenu', handleContextMenu);
     };
-  }, [recording, recordWithTrail, recordTrailLength, mouseState]);
+  }, [recording, recordWithTrail, recordTrailLength, replayTrailLength, mouseState]);
 
-  const clearRecording = (): void => {
-    setSnapshots([]);
-    setTrailPoints([]);
-    lastTimeRef.current = Date.now();
-  };
+  useEffect(() => {
+    if (clearRecording) {
+      setSnapshots([]);
+      setTrailPoints([]);
+      lastTimeRef.current = Date.now();
+    }
+  }, [clearRecording])
+
+  // any time anything changes, update the mouseAction that we return
+  useEffect(() => {
+    setMouseAction({
+      // use the "abstracted" action name of just "mouse"
+      name: "mouse",
+      value: JSON.stringify(snapshots)
+    })
+  }, [recording, recordWithTrail, recordTrailLength, replayTrailLength, mouseState])
 
   return {
     mouseState,
     snapshots,
     trailPoints,
-    clearRecording
+    mouseAction,
   };
 };

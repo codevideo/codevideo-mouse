@@ -3,43 +3,67 @@ import { IMouseProps } from '../interfaces/IMouseProps';
 import { useRecordMousePosition } from '../hooks/useRecordMousePosition';
 import { MouseReplay } from './MouseReplay';
 import { MouseTrail } from './MouseTrail';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { getMouseContextManifest } from '../utils/getMouseContextManifest';
 
 export function Mouse(props: IMouseProps) {
-    const { recording, replaying, recordWithTrail, recordTrailLength, replayWithTrail, replayTrailLength, leftClickAnimation, rightClickAnimation, customLeftClickAnimation, customRightClickAnimation } = props;
+  const {
+    recording,
+    clearRecording,
+    mouseActions,
+    setRecordedMouseAction,
+    replaying,
+    recordWithTrail,
+    recordTrailLength,
+    replayWithTrail, 
+    replayTrailLength, 
+    onReplayComplete,
+    leftClickAnimation, 
+    rightClickAnimation, 
+    customLeftClickAnimation, 
+    customRightClickAnimation 
+  } = props;
 
-    const {
-        mouseState,
-        snapshots,
-        trailPoints,
-        clearRecording
-      } = useRecordMousePosition({
-        recording,
-        recordWithTrail,
-        recordTrailLength,
-      });
+  // call getMouseContextManifest here on mount - memoized exactly once
+  const mouseContextManifest = useMemo(() => getMouseContextManifest(), []);
 
-    // call getMouseContextManifest here on mount - memoized exactly once
-    const mouseContextManifest = useMemo(() => getMouseContextManifest(), []);
+  const {
+    mouseState,
+    snapshots,
+    trailPoints,
+    mouseAction,
+  } = useRecordMousePosition({
+    recording,
+    recordWithTrail,
+    recordTrailLength,
+    replayTrailLength,
+    clearRecording
+  });
 
-    return (
-        <>
-            {!recording && (
-                <MouseReplay
-                    mouseContextManifest={mouseContextManifest}
-                    recording={recording}
-                    snapshots={snapshots}
-                    currentPosition={mouseState.position}
-                    buttonStates={mouseState.buttonStates}
-                    onReplayComplete={() => console.log("Replay completed")}
-                    leftClickAnimation={leftClickAnimation}
-                    rightClickAnimation={rightClickAnimation}
-                    // customLeftClickAnimation={customLeftClickAnimation}
-                    // customRightClickAnimation={customRightClickAnimation}
-              />
-            )}
-            {recording && recordWithTrail && <MouseTrail points={trailPoints} length={recordTrailLength} />}
-        </>
-    );
+  // TODO: better pattern to pass setRecordedMouseAction directly into the hook above?
+  useEffect(() => {
+    if (setRecordedMouseAction) {
+      setRecordedMouseAction(mouseAction)
+    }
+  }, [mouseAction])
+
+  return (
+    <>
+      <MouseReplay
+        mouseContextManifest={mouseContextManifest}
+        mouseActions={mouseActions}
+        replaying={replaying}
+        snapshots={snapshots}
+        currentPosition={mouseState.position}
+        buttonStates={mouseState.buttonStates}
+        onReplayComplete={onReplayComplete}
+        leftClickAnimation={leftClickAnimation}
+        rightClickAnimation={rightClickAnimation}
+        customLeftClickAnimation={customLeftClickAnimation}
+        customRightClickAnimation={customRightClickAnimation}
+      />
+      {recording && recordWithTrail && <MouseTrail points={trailPoints} length={recordTrailLength} />}
+      {replaying && replayWithTrail && <MouseTrail points={trailPoints} length={replayTrailLength} />}
+    </>
+  );
 }

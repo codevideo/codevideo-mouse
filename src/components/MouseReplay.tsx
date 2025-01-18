@@ -5,6 +5,9 @@ import { DefaultCursor } from "./cursors/DefaultCursor";
 import { PointerCursor } from "./cursors/PointerCursor";
 import { TextSelectCursor } from "./cursors/TextSelectCursor";
 import { IMouseContextManifest } from "../interfaces/IMouseContextManifest";
+import { MouseAction } from "@fullstackcraftllc/codevideo-types";
+import { convertAbstractedActionToSnapshots } from "src/utils/convertAbstractedActionToSnapshots";
+import { convertGranularActionsToSnapshots } from "src/utils/convertGranularActionsToSnapshots";
 
 export interface IMouseReplayProps {
   mouseContextManifest: Array<IMouseContextManifest>;
@@ -15,8 +18,9 @@ export interface IMouseReplayProps {
     right: boolean;
     middle: boolean;
   };
+  mouseActions?: Array<MouseAction>;
   onReplayComplete?: () => void;
-  recording?: boolean;
+  replaying?: boolean;
   leftClickAnimation?: boolean;
   rightClickAnimation?: boolean;
   customLeftClickAnimation?: ReactNode;
@@ -24,19 +28,21 @@ export interface IMouseReplayProps {
 }
 
 export const MouseReplay = (props: IMouseReplayProps) => {
-  const { 
+  const {
     mouseContextManifest,
     snapshots,
     currentPosition,
     onReplayComplete,
+    mouseActions,
+    replaying,
     leftClickAnimation,
     rightClickAnimation,
     customLeftClickAnimation,
     customRightClickAnimation
   } = props;
+  const [snapshotsInternal, setSnapshotsInternal] = useState<Array<IMouseSnapshot>>(snapshots)
   const [replayPosition, setReplayPosition] = useState<IPoint | null>(null);
   const [currentCursor, setCurrentCursor] = useState<string>("default");
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [activeClickAnimations, setActiveClickAnimations] = useState<Array<{
     id: number;
     x: number;
@@ -55,7 +61,6 @@ export const MouseReplay = (props: IMouseReplayProps) => {
     if (animationFrameRef.current) {
       window.cancelAnimationFrame(animationFrameRef.current);
     }
-    setIsPlaying(false);
     setReplayPosition(null);
     setCurrentCursor("default");
     setActiveClickAnimations([]);
@@ -86,19 +91,18 @@ export const MouseReplay = (props: IMouseReplayProps) => {
   };
 
   const playPath = (): void => {
-    if (!snapshots.length) return;
+    if (!snapshotsInternal.length) return;
 
-    setIsPlaying(true);
     let currentIndex = 0;
 
     const playNext = (): void => {
-      if (currentIndex >= snapshots.length) {
+      if (currentIndex >= snapshotsInternal.length) {
         stopPlayback();
         if (onReplayComplete) onReplayComplete();
         return;
       }
 
-      const snapshot = snapshots[currentIndex];
+      const snapshot = snapshotsInternal[currentIndex];
       setReplayPosition({ x: snapshot.x, y: snapshot.y });
 
       // Handle scroll events
@@ -123,8 +127,8 @@ export const MouseReplay = (props: IMouseReplayProps) => {
       setCurrentCursor(context?.cursor || "default");
 
       const nextDelay =
-        currentIndex < snapshots.length - 1
-          ? Math.max(1, snapshots[currentIndex + 1].timestamp)
+        currentIndex < snapshotsInternal.length - 1
+          ? Math.max(1, snapshotsInternal[currentIndex + 1].timestamp)
           : 0;
 
       timeoutRef.current = window.setTimeout(() => {
@@ -147,14 +151,38 @@ export const MouseReplay = (props: IMouseReplayProps) => {
     };
   }, []);
 
+  // play if replay changes
   useEffect(() => {
-    if (isPlaying) {
-      stopPlayback();
-      playPath();
+    if (replaying) {
+      
+        // standard replay
+        stopPlayback();
+        playPath();
+      
     } else {
       stopPlayback();
     }
-  }, [snapshots]);
+  }, [replaying]);
+
+  // mouseActionschange
+  useEffect(() => {
+    if (mouseActions && mouseActions.length > 0) {
+      // mouse action driver - different ways here is the easy one:
+      if (mouseActions.length === 1 && mouseActions[0].name === "mouse") {
+        const snapshots = convertAbstractedActionToSnapshots(mouseActions[0]);
+        setSnapshotsInternal(snapshots);
+      } else if (mouseActions.length > 0) {
+        // we have composite actions like 'double-click' etc etc.
+        alert("codevideo-mouse currently only supports driving from the single abstracted action name 'mouse', i.e. a JSON with shape [ { name: 'mouse', action: '...' } ]")
+        // TODO: finish and activate:
+        // convertGranularActionsToSnapshots(mouseActions);
+      }
+    }
+  },[mouseActions]);
+
+  useEffect(() => {
+    setSnapshotsInternal(snapshots)
+  }, [snapshots])
 
   const renderClickAnimation = (animation: {
     id: number;

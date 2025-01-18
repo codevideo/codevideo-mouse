@@ -12,8 +12,18 @@ export const MouseTrail = (props: ITrailProps) => {
 
   const totalSegments = points.length - 1; // # of lines
 
+  const svgStyle = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    pointerEvents: 'none',
+    zIndex: 50,
+  } as React.CSSProperties;
+
   return (
-    <svg className="z-50 absolute top-0 left-0 w-full h-full pointer-events-none">
+    <svg style={svgStyle}>
       {points.map((p, i) => {
         if (i === 0) return null;
         const prev = points[i - 1];
