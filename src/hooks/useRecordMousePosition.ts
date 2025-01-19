@@ -3,13 +3,16 @@ import { IMouseSnapshot, IMouseState } from "../interfaces/IMouseSnapshot";
 import { IPoint } from "../interfaces/IPoint";
 import { IUseMousePositionReturn } from "../interfaces/IUseMousePositionReturn";
 import { MouseAction } from "@fullstackcraftllc/codevideo-types"
+import { convertAbstractedActionToSnapshots } from "src/utils/convertAbstractedActionToSnapshots";
 
 export interface IRecordMousePositionProps {
   recording?: boolean;
+  mouseActions?: Array<MouseAction>;
   recordWithTrail?: boolean;
   recordTrailLength?: number;
   replayTrailLength?: number;
   setRecordedMouseAction?: (action: MouseAction) => void;
+  setRecordedSnapshots?: (snapshots: Array<IMouseSnapshot>) => void;
   setMouseState?: (state: IMouseState) => void;
   clearRecording?:boolean;
 }
@@ -19,11 +22,12 @@ export const useRecordMousePosition = (
 ): IUseMousePositionReturn => {
   const {
     recording = false,
+    mouseActions = [],
     recordWithTrail = false,
     recordTrailLength = 500,
     replayTrailLength = 500,
     setRecordedMouseAction = () => {},
-    setMouseState = () => {},
+    setRecordedSnapshots = () => {},
     clearRecording = false,
   } = props;
 
@@ -219,6 +223,22 @@ export const useRecordMousePosition = (
       
   }, [recording, recordWithTrail, recordTrailLength, replayTrailLength, mouseStateInternal])
 
+  // mouseActions change
+  useEffect(() => {
+    if (mouseActions && mouseActions.length > 0) {
+      // mouse action driver - different ways here is the easy one:
+      if (mouseActions.length === 1 && mouseActions[0].name === "mouse") {
+        const snapshots = convertAbstractedActionToSnapshots(mouseActions[0]);
+        setSnapshots(snapshots);
+      } else if (mouseActions.length > 0) {
+        // we have composite actions like 'double-click' etc etc.
+        alert("codevideo-mouse is only supported as a driver from the single abstracted action name 'mouse', i.e. a JSON with shape [ { name: 'mouse', action: '...' } ]")
+        // TODO: finish and activate:
+        // convertGranularActionsToSnapshots(mouseActions);
+      }
+    }
+  }, [mouseActions]);
+
   // any time the mouseAction changes, update the parent
   useEffect(() => {
     if (setRecordedMouseAction) {
@@ -226,12 +246,12 @@ export const useRecordMousePosition = (
     }
   }, [mouseAction])
 
-  // any time the mouseState changes, update the parent
+  // any time the snapshots change, update the parent
   useEffect(() => {
-    if (setMouseState) {
-      setMouseState(mouseStateInternal)
+    if (setRecordedSnapshots) {
+      setRecordedSnapshots(snapshots)
     }
-  }, [mouseStateInternal])
+  }, [snapshots])
 
   return {
     mouseState: mouseStateInternal,

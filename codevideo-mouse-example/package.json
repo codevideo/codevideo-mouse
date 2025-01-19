@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@fullstackcraftllc/codevideo-mouse": "^1.0.12",
+    "@fullstackcraftllc/codevideo-mouse": "^1.0.15",
     "@fullstackcraftllc/codevideo-types": "^1.8.8",
     "cra-template-typescript": "1.2.0",
     "react": "^19.0.0",

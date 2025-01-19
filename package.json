@@ -1,6 +1,6 @@
 {
   "name": "@fullstackcraftllc/codevideo-mouse",
-  "version": "1.0.13",
+  "version": "1.0.15",
   "description": "A React TypeScript component for a fully auditable, drivable, and replayable mouse.",
   "type": "module",
   "main": "dist/index.js",

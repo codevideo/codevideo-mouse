@@ -12,16 +12,16 @@ export function Mouse(props: IMouseProps) {
     clearRecording,
     mouseActions,
     setRecordedMouseAction,
-    setMouseState,
+    setRecordedSnapshots,
     recordWithTrail,
     recordTrailLength,
-    replayWithTrail, 
-    replayTrailLength, 
+    replayWithTrail,
+    replayTrailLength,
     onReplayComplete,
-    leftClickAnimation, 
-    rightClickAnimation, 
-    customLeftClickAnimation, 
-    customRightClickAnimation 
+    leftClickAnimation,
+    rightClickAnimation,
+    customLeftClickAnimation,
+    customRightClickAnimation
   } = props;
 
   // call getMouseContextManifest here on mount - memoized exactly once
@@ -30,17 +30,16 @@ export function Mouse(props: IMouseProps) {
   const [replaying, setReplaying] = useState(mode === 'replay');
 
   const {
-    mouseState,
     snapshots,
     trailPoints,
-    mouseAction,
   } = useRecordMousePosition({
     recording,
+    mouseActions,
     recordWithTrail,
     recordTrailLength,
     replayTrailLength,
     setRecordedMouseAction,
-    setMouseState,
+    setRecordedSnapshots,
     clearRecording
   });
 
@@ -50,7 +49,7 @@ export function Mouse(props: IMouseProps) {
     } else {
       setRecording(false);
     }
-  } , [mode]);
+  }, [mode]);
 
   useEffect(() => {
     if (mode === 'replay') {
@@ -58,7 +57,7 @@ export function Mouse(props: IMouseProps) {
     } else {
       setReplaying(false);
     }
-  } , [mode]);
+  }, [mode]);
 
   // a change in mouseActions forces replay
   useEffect(() => {
@@ -79,19 +78,17 @@ export function Mouse(props: IMouseProps) {
     <>
       <MouseReplay
         mouseContextManifest={mouseContextManifest}
-        mouseActions={mouseActions}
         replaying={replaying}
         snapshots={snapshots}
-        currentPosition={mouseState.position}
-        buttonStates={mouseState.buttonStates}
         onReplayComplete={onReplayComplete}
         leftClickAnimation={leftClickAnimation}
         rightClickAnimation={rightClickAnimation}
         customLeftClickAnimation={customLeftClickAnimation}
         customRightClickAnimation={customRightClickAnimation}
       />
-      {recording && recordWithTrail && <MouseTrail points={trailPoints} length={recordTrailLength} />}
-      {replaying && replayWithTrail && <MouseTrail points={trailPoints} length={replayTrailLength} />}
+      {recordWithTrail && <MouseTrail recording={recording} replaying={replaying} points={trailPoints} />}
+      {/* TODO: handle replay with trail */}
+      {/* {replayWithTrail && <MouseTrail recording={recording} replaying={replaying} points={trailPoints} />} */}
     </>
   );
 }

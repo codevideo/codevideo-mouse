@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { IMouseState, Mouse } from "@fullstackcraftllc/codevideo-mouse";
+import { IMouseSnapshot, Mouse } from "@fullstackcraftllc/codevideo-mouse";
 import { GeometricShapes } from "./components/GeometricShapes.tsx";
 import { MouseAction } from "@fullstackcraftllc/codevideo-types";
 
 const App = () => {
   const [recordedMouseAction, setRecordedMouseAction] = useState<MouseAction>();
-  const [mouseState, setMouseState] = useState<IMouseState>();
+  const [recordedSnapshots, setRecordedSnapshots] = useState<Array<IMouseSnapshot>>();
   const [mouseActions, setMouseActions] = useState<Array<MouseAction>>([]);
   const [recording, setRecording] = useState(false);
   const [clearRecording, setClearRecording] = useState(false);
@@ -183,7 +183,7 @@ const App = () => {
 
                 <h2 className="text-xl font-semibold mb-4">Current Mouse State</h2>
                 <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-sm">
-                  <code>{JSON.stringify(mouseState, null, 2)}</code>
+                  <code>{recordedSnapshots && JSON.stringify(recordedSnapshots[recordedSnapshots.length - 1], null, 2)}</code>
                 </pre>
               </div>
             </div>
@@ -232,7 +232,7 @@ const App = () => {
         recordTrailLength={recordTrailLength}
         replayTrailLength={replayTrailLength}
         setRecordedMouseAction={setRecordedMouseAction}
-        setMouseState={setMouseState}
+        setRecordedSnapshots={setRecordedSnapshots}
       />
     </>
   );

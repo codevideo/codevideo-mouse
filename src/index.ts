@@ -1,2 +1,2 @@
 export { Mouse } from "./components/Mouse";
-export { IMouseState } from "./interfaces/IMouseSnapshot";
+export { IMouseSnapshot } from "./interfaces/IMouseSnapshot";

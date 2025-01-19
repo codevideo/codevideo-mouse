@@ -1,13 +1,16 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { IPoint } from "../interfaces/IPoint";
 
-interface ITrailProps {
+interface IMouseTrailProps {
+  recording: boolean;
+  replaying: boolean;
   points: IPoint[];
-  length?: number;
 }
 
-export const MouseTrail = (props: ITrailProps) => {
-  const { points } = props;
+export const MouseTrail = (props: IMouseTrailProps) => {
+  const { recording, replaying, points } = props;
+  const [trailPoints, setTrailPoints] = useState<Array<IPoint>>(points)
+
   if (points.length < 2) return null;
 
   const totalSegments = points.length - 1; // # of lines
@@ -24,7 +27,7 @@ export const MouseTrail = (props: ITrailProps) => {
 
   return (
     <svg style={svgStyle}>
-      {points.map((p, i) => {
+      {trailPoints.map((p, i) => {
         if (i === 0) return null;
         const prev = points[i - 1];
 

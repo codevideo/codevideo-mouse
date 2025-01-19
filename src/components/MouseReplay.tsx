@@ -5,20 +5,10 @@ import { DefaultCursor } from "./cursors/DefaultCursor";
 import { PointerCursor } from "./cursors/PointerCursor";
 import { TextSelectCursor } from "./cursors/TextSelectCursor";
 import { IMouseContextManifest } from "../interfaces/IMouseContextManifest";
-import { MouseAction } from "@fullstackcraftllc/codevideo-types";
-import { convertAbstractedActionToSnapshots } from "src/utils/convertAbstractedActionToSnapshots";
-import { convertGranularActionsToSnapshots } from "src/utils/convertGranularActionsToSnapshots";
 
 export interface IMouseReplayProps {
   mouseContextManifest: Array<IMouseContextManifest>;
   snapshots: IMouseSnapshot[];
-  currentPosition: IPoint;
-  buttonStates: {
-    left: boolean;
-    right: boolean;
-    middle: boolean;
-  };
-  mouseActions?: Array<MouseAction>;
   onReplayComplete?: () => void;
   replaying?: boolean;
   leftClickAnimation?: boolean;
@@ -31,9 +21,7 @@ export const MouseReplay = (props: IMouseReplayProps) => {
   const {
     mouseContextManifest,
     snapshots,
-    currentPosition,
     onReplayComplete,
-    mouseActions,
     replaying,
     leftClickAnimation,
     rightClickAnimation,
@@ -167,23 +155,6 @@ export const MouseReplay = (props: IMouseReplayProps) => {
     setReplayingInternal(replaying);
   }, [replaying]);
 
-  // mouseActions change
-  useEffect(() => {
-    if (mouseActions && mouseActions.length > 0) {
-      // mouse action driver - different ways here is the easy one:
-      if (mouseActions.length === 1 && mouseActions[0].name === "mouse") {
-        const snapshots = convertAbstractedActionToSnapshots(mouseActions[0]);
-        setSnapshotsInternal(snapshots);
-        setReplayingInternal(true);
-      } else if (mouseActions.length > 0) {
-        // we have composite actions like 'double-click' etc etc.
-        alert("codevideo-mouse is only supported as a driver from the single abstracted action name 'mouse', i.e. a JSON with shape [ { name: 'mouse', action: '...' } ]")
-        // TODO: finish and activate:
-        // convertGranularActionsToSnapshots(mouseActions);
-      }
-    }
-  }, [mouseActions]);
-
   useEffect(() => {
     setSnapshotsInternal(snapshots)
   }, [snapshots])
@@ -236,6 +207,7 @@ export const MouseReplay = (props: IMouseReplayProps) => {
   };
 
   const renderCursor = () => {
+    const currentPosition = snapshots[snapshots.length - 1]
     const position = replayPosition || currentPosition;
     if (!position) return null;
     const { x, y } = position;
