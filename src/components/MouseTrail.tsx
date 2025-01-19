@@ -13,7 +13,7 @@ export const MouseTrail = (props: ITrailProps) => {
   const totalSegments = points.length - 1; // # of lines
 
   const svgStyle = {
-    position: 'absolute',
+    position: 'fixed',
     top: 0,
     left: 0,
     width: '100%',
@@ -28,6 +28,12 @@ export const MouseTrail = (props: ITrailProps) => {
         if (i === 0) return null;
         const prev = points[i - 1];
 
+        // Adjust coordinates for scroll position
+        const x1 = prev.x - window.scrollX;
+        const y1 = prev.y - window.scrollY;
+        const x2 = p.x - window.scrollX;
+        const y2 = p.y - window.scrollY;
+
         // i ranges 1..N => so alpha can be (i / totalSegments)
         // or any fade function you like
         const alpha = i / totalSegments;
@@ -35,10 +41,10 @@ export const MouseTrail = (props: ITrailProps) => {
         return (
           <line
             key={i}
-            x1={prev.x}
-            y1={prev.y}
-            x2={p.x}
-            y2={p.y}
+            x1={x1}
+            y1={y1}
+            x2={x2}
+            y2={y2}
             stroke={`rgba(0, 0, 0, ${alpha})`}
             strokeWidth="2"
             strokeLinecap="round"

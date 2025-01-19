@@ -41,6 +41,7 @@ export const MouseReplay = (props: IMouseReplayProps) => {
     customRightClickAnimation
   } = props;
   const [snapshotsInternal, setSnapshotsInternal] = useState<Array<IMouseSnapshot>>(snapshots)
+  const [replayingInternal, setReplayingInternal] = useState<boolean | undefined>(replaying || false);
   const [replayPosition, setReplayPosition] = useState<IPoint | null>(null);
   const [currentCursor, setCurrentCursor] = useState<string>("default");
   const [activeClickAnimations, setActiveClickAnimations] = useState<Array<{
@@ -73,7 +74,7 @@ export const MouseReplay = (props: IMouseReplayProps) => {
 
     const type = button === 0 ? 'left' : 'right';
     clickAnimationId.current += 1;
-    
+
     setActiveClickAnimations(prev => [...prev, {
       id: clickAnimationId.current,
       x,
@@ -84,7 +85,7 @@ export const MouseReplay = (props: IMouseReplayProps) => {
 
     // Remove animation after 500ms
     setTimeout(() => {
-      setActiveClickAnimations(prev => 
+      setActiveClickAnimations(prev =>
         prev.filter(animation => animation.id !== clickAnimationId.current)
       );
     }, 500);
@@ -153,32 +154,35 @@ export const MouseReplay = (props: IMouseReplayProps) => {
 
   // play if replay changes
   useEffect(() => {
-    if (replaying) {
-      
-        // standard replay
-        stopPlayback();
-        playPath();
-      
+    if (replayingInternal) {
+      // standard replay
+      stopPlayback();
+      playPath();
     } else {
       stopPlayback();
     }
+  }, [replayingInternal]);
+
+  useEffect(() => {
+    setReplayingInternal(replaying);
   }, [replaying]);
 
-  // mouseActionschange
+  // mouseActions change
   useEffect(() => {
     if (mouseActions && mouseActions.length > 0) {
       // mouse action driver - different ways here is the easy one:
       if (mouseActions.length === 1 && mouseActions[0].name === "mouse") {
         const snapshots = convertAbstractedActionToSnapshots(mouseActions[0]);
         setSnapshotsInternal(snapshots);
+        setReplayingInternal(true);
       } else if (mouseActions.length > 0) {
         // we have composite actions like 'double-click' etc etc.
-        alert("codevideo-mouse currently only supports driving from the single abstracted action name 'mouse', i.e. a JSON with shape [ { name: 'mouse', action: '...' } ]")
+        alert("codevideo-mouse is only supported as a driver from the single abstracted action name 'mouse', i.e. a JSON with shape [ { name: 'mouse', action: '...' } ]")
         // TODO: finish and activate:
         // convertGranularActionsToSnapshots(mouseActions);
       }
     }
-  },[mouseActions]);
+  }, [mouseActions]);
 
   useEffect(() => {
     setSnapshotsInternal(snapshots)

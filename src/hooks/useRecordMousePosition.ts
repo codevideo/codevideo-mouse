@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { IMouseSnapshot, IMouseState } from "../interfaces/IMouseSnapshot";
 import { IPoint } from "../interfaces/IPoint";
 import { IUseMousePositionReturn } from "../interfaces/IUseMousePositionReturn";
@@ -9,7 +9,9 @@ export interface IRecordMousePositionProps {
   recordWithTrail?: boolean;
   recordTrailLength?: number;
   replayTrailLength?: number;
-  clearRecording?: boolean;
+  setRecordedMouseAction?: (action: MouseAction) => void;
+  setMouseState?: (state: IMouseState) => void;
+  clearRecording?:boolean;
 }
 
 export const useRecordMousePosition = (
@@ -20,13 +22,15 @@ export const useRecordMousePosition = (
     recordWithTrail = false,
     recordTrailLength = 500,
     replayTrailLength = 500,
+    setRecordedMouseAction = () => {},
+    setMouseState = () => {},
     clearRecording = false,
   } = props;
 
   // we always need to record the max trail length
   const maxTrailLength = Math.max(recordTrailLength, replayTrailLength);
 
-  const [mouseState, setMouseState] = useState<IMouseState>({
+  const [mouseStateInternal, setMouseStateInternal] = useState<IMouseState>({
     position: { x: 0, y: 0 },
     buttonStates: {
       left: false,
@@ -64,12 +68,12 @@ export const useRecordMousePosition = (
     }
 
     return {
-      x: event instanceof MouseEvent ? event.clientX : mouseState.position.x,
-      y: event instanceof MouseEvent ? event.clientY : mouseState.position.y,
+      x: event instanceof MouseEvent ? event.clientX : mouseStateInternal.position.x,
+      y: event instanceof MouseEvent ? event.clientY : mouseStateInternal.position.y,
       timestamp: timeDiff,
       type,
       button,
-      buttonStates: { ...mouseState.buttonStates },
+      buttonStates: { ...mouseStateInternal.buttonStates },
       scrollPosition: {
         x: window.scrollX,
         y: window.scrollY
@@ -82,24 +86,28 @@ export const useRecordMousePosition = (
     const handleMouseMove = (ev: MouseEvent): void => {
       const newPosition = { x: ev.clientX, y: ev.clientY };
 
-      setMouseState(prev => ({
+      setMouseStateInternal(prev => ({
         ...prev,
         position: newPosition
       }));
 
-      if (recordWithTrail) {
+      if (recordWithTrail && recording) {
         setTrailPoints(prev => {
+          const newPosition = {
+            x: ev.clientX + window.scrollX,
+            y: ev.clientY + window.scrollY
+          };
           const newPoints = [...prev, newPosition];
           let totalLength = 0;
           let i = newPoints.length - 1;
-
+      
           while (i > 0 && totalLength < maxTrailLength) {
             const dx = newPoints[i].x - newPoints[i - 1].x;
             const dy = newPoints[i].y - newPoints[i - 1].y;
             totalLength += Math.sqrt(dx * dx + dy * dy);
             i--;
           }
-
+      
           return newPoints.slice(Math.max(0, i));
         });
       }
@@ -120,7 +128,7 @@ export const useRecordMousePosition = (
       const buttonKey = buttonMapping[ev.button];
       if (!buttonKey) return;
 
-      setMouseState(prev => ({
+      setMouseStateInternal(prev => ({
         ...prev,
         buttonStates: {
           ...prev.buttonStates,
@@ -144,7 +152,7 @@ export const useRecordMousePosition = (
       const buttonKey = buttonMapping[ev.button];
       if (!buttonKey) return;
 
-      setMouseState(prev => ({
+      setMouseStateInternal(prev => ({
         ...prev,
         buttonStates: {
           ...prev.buttonStates,
@@ -159,7 +167,7 @@ export const useRecordMousePosition = (
     };
 
     const handleScroll = (ev: WheelEvent): void => {
-      setMouseState(prev => ({
+      setMouseStateInternal(prev => ({
         ...prev,
         scrollPosition: {
           x: window.scrollX,
@@ -191,15 +199,15 @@ export const useRecordMousePosition = (
       window.removeEventListener('wheel', handleScroll);
       window.removeEventListener('contextmenu', handleContextMenu);
     };
-  }, [recording, recordWithTrail, recordTrailLength, replayTrailLength, mouseState]);
+  }, [recording, recordWithTrail, recordTrailLength, replayTrailLength, mouseStateInternal]);
 
+  // every time clearRecording changes, reset this stuff
   useEffect(() => {
-    if (clearRecording) {
-      setSnapshots([]);
-      setTrailPoints([]);
-      lastTimeRef.current = Date.now();
-    }
-  }, [clearRecording])
+    setSnapshots([]);
+    setTrailPoints([]);
+    lastTimeRef.current = Date.now();
+    setMouseAction({name: "mouse", value: ""});
+  }, [clearRecording]);
 
   // any time anything changes, update the mouseAction that we return
   useEffect(() => {
@@ -208,10 +216,25 @@ export const useRecordMousePosition = (
       name: "mouse",
       value: JSON.stringify(snapshots)
     })
-  }, [recording, recordWithTrail, recordTrailLength, replayTrailLength, mouseState])
+      
+  }, [recording, recordWithTrail, recordTrailLength, replayTrailLength, mouseStateInternal])
+
+  // any time the mouseAction changes, update the parent
+  useEffect(() => {
+    if (setRecordedMouseAction) {
+      setRecordedMouseAction(mouseAction)
+    }
+  }, [mouseAction])
+
+  // any time the mouseState changes, update the parent
+  useEffect(() => {
+    if (setMouseState) {
+      setMouseState(mouseStateInternal)
+    }
+  }, [mouseStateInternal])
 
   return {
-    mouseState,
+    mouseState: mouseStateInternal,
     snapshots,
     trailPoints,
     mouseAction,

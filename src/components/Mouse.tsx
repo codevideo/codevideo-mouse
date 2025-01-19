@@ -3,16 +3,16 @@ import { IMouseProps } from '../interfaces/IMouseProps';
 import { useRecordMousePosition } from '../hooks/useRecordMousePosition';
 import { MouseReplay } from './MouseReplay';
 import { MouseTrail } from './MouseTrail';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getMouseContextManifest } from '../utils/getMouseContextManifest';
 
 export function Mouse(props: IMouseProps) {
   const {
-    recording,
+    mode,
     clearRecording,
     mouseActions,
     setRecordedMouseAction,
-    replaying,
+    setMouseState,
     recordWithTrail,
     recordTrailLength,
     replayWithTrail, 
@@ -26,6 +26,8 @@ export function Mouse(props: IMouseProps) {
 
   // call getMouseContextManifest here on mount - memoized exactly once
   const mouseContextManifest = useMemo(() => getMouseContextManifest(), []);
+  const [recording, setRecording] = useState(mode === 'record');
+  const [replaying, setReplaying] = useState(mode === 'replay');
 
   const {
     mouseState,
@@ -37,15 +39,41 @@ export function Mouse(props: IMouseProps) {
     recordWithTrail,
     recordTrailLength,
     replayTrailLength,
+    setRecordedMouseAction,
+    setMouseState,
     clearRecording
   });
 
-  // TODO: better pattern to pass setRecordedMouseAction directly into the hook above?
   useEffect(() => {
-    if (setRecordedMouseAction) {
-      setRecordedMouseAction(mouseAction)
+    if (mode === 'record') {
+      setRecording(true);
+    } else {
+      setRecording(false);
     }
-  }, [mouseAction])
+  } , [mode]);
+
+  useEffect(() => {
+    if (mode === 'replay') {
+      setReplaying(true);
+    } else {
+      setReplaying(false);
+    }
+  } , [mode]);
+
+  // a change in mouseActions forces replay
+  useEffect(() => {
+    if (mouseActions && mouseActions.length > 0) {
+      // Stop any ongoing recording
+      setRecording(false);
+      // Start replaying
+      setReplaying(true);
+    }
+  }, [mouseActions]);
+
+  // don't render anything if we are not recording or replaying
+  if (!recording && !replaying) {
+    return <></>;
+  }
 
   return (
     <>

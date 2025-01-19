@@ -1,7 +1,7 @@
 {
   "name": "@fullstackcraftllc/codevideo-mouse",
-  "version": "1.0.5",
-  "description": "A React TypeScript component for a fully auditable, drivable, and replayable virtual mouse.",
+  "version": "1.0.13",
+  "description": "A React TypeScript component for a fully auditable, drivable, and replayable mouse.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/codevideo/codevideo-mouse#readme",
   "devDependencies": {
-    "@fullstackcraftllc/codevideo-types": "^1.8.6",
+    "@fullstackcraftllc/codevideo-types": "^1.8.8",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@types/react": "^19.0.7",

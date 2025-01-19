@@ -1,47 +1,39 @@
 import React, { useState } from "react";
+import { IMouseState, Mouse } from "@fullstackcraftllc/codevideo-mouse";
 import { GeometricShapes } from "./components/GeometricShapes.tsx";
-import { Mouse } from "@fullstackcraftllc/codevideo-mouse";
 import { MouseAction } from "@fullstackcraftllc/codevideo-types";
 
-function App() {
+const App = () => {
   const [recordedMouseAction, setRecordedMouseAction] = useState<MouseAction>();
+  const [mouseState, setMouseState] = useState<IMouseState>();
   const [mouseActions, setMouseActions] = useState<Array<MouseAction>>([]);
-  const [recording, setRecording] = useState<boolean>(false);
-  const [clearRecording, setClearRecording] = useState<boolean>(false);
-  const [replaying, setReplaying] = useState<boolean>(false);
-  const [mouseX, setMouseX] = useState<number>(0);
-  const [mouseY, setMouseY] = useState<number>(0);
+  const [recording, setRecording] = useState(false);
+  const [clearRecording, setClearRecording] = useState(false);
+  const [replaying, setReplaying] = useState(false);
+  const [interactWithElements, setInteractWithElements] = useState(true);
+  const [recordWithTrail, setRecordWithTrail] = useState(true);
+  const [replayWithTrail, setReplayWithTrail] = useState(false);
+  const [recordTrailLength, setRecordTrailLength] = useState(500);
+  const [replayTrailLength, setReplayTrailLength] = useState(500);
 
-  const toggleRecording = (): void => {
-    if (recording) {
-      setRecording(false);
-    } else {
-      setRecording(true);
-    }
+  const toggleRecording = () => {
+    setRecording(!recording);
   };
 
-  const formatBytes = (bytes: number): string => {
-    if (bytes < 1024) {
-      return `${bytes} bytes`;
-    } else if (bytes < 1024 * 1024) {
-      return `${(bytes / 1024).toFixed(2)} KB`;
-    } else {
-      return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-    }
+  const formatBytes = (bytes) => {
+    if (bytes < 1024) return `${bytes} bytes`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   };
 
-  const onTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
+  const onTextAreaChange = (e) => {
     try {
-      // Parse the input text as JSON
-      const parsedActions = JSON.parse(e.target.value);
-
-      // Validate that it's an array
+      const parsedActions = JSON.parse(e.target.value) as MouseAction[];
       if (!Array.isArray(parsedActions)) {
         console.error('Input must be an array of mouse actions');
         return;
       }
 
-      // Validate each action has required properties
       const validActions = parsedActions.every(action =>
         typeof action === 'object' &&
         typeof action.name === 'string' &&
@@ -53,115 +45,195 @@ function App() {
         return;
       }
 
-      // Set the validated mouse actions
       setMouseActions(parsedActions);
+      setRecording(false);
+      setReplaying(true);
     } catch (error) {
       console.error('Failed to parse mouse actions:', error);
     }
   };
 
-  const mousePath = [];
-
-  // for each mouseAction, get the mouse-move
-
+  const mousePath = recordedMouseAction?.value ? JSON.parse(recordedMouseAction.value) : [];
   const estSize = formatBytes(mousePath.length * 8 * 2);
-
-  console.log(recordedMouseAction?.value)
 
   const safeParse = () => {
     if (recordedMouseAction?.value && recordedMouseAction?.value !== "") {
-      return JSON.parse(recordedMouseAction.value)
+      return JSON.parse(recordedMouseAction.value);
     }
-    return {}
-  }
+    return [];
+  };
 
-  const recordedMouseActionParsed = safeParse()
+  const recordedMouseActionParsed = safeParse();
+
+  const mode = recording ? 'record' : replaying ? 'replay' : undefined;
+
+  const code = `<Mouse
+  mode="${mode || 'undefined'}"
+  interactWithElements={${interactWithElements}}
+  mouseActions={${JSON.stringify(mouseActions)}}
+  clearRecording={${clearRecording}}
+  onReplayComplete={() => setReplaying(false)}
+  recordWithTrail={${recordWithTrail}}
+  replayWithTrail={${replayWithTrail}}
+  recordTrailLength={${recordTrailLength}}
+  replayTrailLength={${replayTrailLength}}
+/>`;
 
   return (
     <>
-      <div className="p-4">
-        <div className="flex gap-4 mb-4">
-          <button
-            onClick={toggleRecording}
-            className={`px-4 py-2 rounded ${recording
-              ? "bg-red-500 hover:bg-red-600"
-              : "bg-green-500 hover:bg-green-600"
-              } text-white`}
-          >
-            {recording ? "Stop Recording Mouse" : "Start Recording Mouse"}
-          </button>
-          {!recording && recordedMouseAction && recordedMouseActionParsed.length > 0 && (
-            <button
-              onClick={() => setReplaying(true)}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
-            >
-              Playback Mouse Movement
-            </button>
-          )}
-          {replaying && (
-            <button
-              onClick={() => setReplaying(false)}
-              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-            >
-              Stop Playback
-            </button>
-          )}
-          {recordedMouseAction && recordedMouseActionParsed.length > 0 && (
-            <button
-              onClick={() => setClearRecording(true)}
-              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-            >
-              Clear Recording
-            </button>
-          )}
+      <div className="p-6 max-w-6xl mx-auto">
+        <h1 className="text-3xl font-bold mb-6">Mouse Component Demo</h1>
+        <p className="mb-4">An interactive demo showcasing all Mouse component options.</p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold mb-4">Controls</h2>
+            <div className="space-y-6">
+              <div className="flex gap-4">
+                <button
+                  onClick={toggleRecording}
+                  className={`px-4 py-2 rounded ${recording ? "bg-red-500 hover:bg-red-600" : "bg-green-500 hover:bg-green-600"
+                    } text-white`}
+                >
+                  {recording ? "Stop Recording" : "Start Recording"}
+                </button>
+
+                {!recording && recordedMouseActionParsed.length > 0 && (
+                  <button
+                    onClick={() => setReplaying(true)}
+                    disabled={replaying}
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
+                  >
+                    Playback
+                  </button>
+                )}
+
+                {replaying && (
+                  <button
+                    onClick={() => setReplaying(false)}
+                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                  >
+                    Stop Playback
+                  </button>
+                )}
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="font-medium">Interact with Elements</label>
+                  <div
+                    onClick={() => setInteractWithElements(!interactWithElements)}
+                    className={`w-12 h-6 rounded-full transition-colors duration-200 ease-in-out cursor-pointer ${interactWithElements ? 'bg-green-500' : 'bg-gray-300'
+                      }`}
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform duration-200 ease-in-out ${interactWithElements ? 'translate-x-6' : 'translate-x-1'
+                      }`} />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <label className="font-medium">Record with Trail</label>
+                  <div
+                    onClick={() => setRecordWithTrail(!recordWithTrail)}
+                    className={`w-12 h-6 rounded-full transition-colors duration-200 ease-in-out cursor-pointer ${recordWithTrail ? 'bg-green-500' : 'bg-gray-300'
+                      }`}
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform duration-200 ease-in-out ${recordWithTrail ? 'translate-x-6' : 'translate-x-1'
+                      }`} />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <label className="font-medium">Replay with Trail</label>
+                  <div
+                    onClick={() => setReplayWithTrail(!replayWithTrail)}
+                    className={`w-12 h-6 rounded-full transition-colors duration-200 ease-in-out cursor-pointer ${replayWithTrail ? 'bg-green-500' : 'bg-gray-300'
+                      }`}
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform duration-200 ease-in-out ${recordWithTrail ? 'translate-x-6' : 'translate-x-1'
+                      }`} />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block font-medium">Record Trail Length: {recordTrailLength}</label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1000"
+                    step="10"
+                    value={recordTrailLength}
+                    onChange={(e) => setRecordTrailLength(Number(e.target.value))}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block font-medium">Replay Trail Length: {replayTrailLength}</label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1000"
+                    step="10"
+                    value={replayTrailLength}
+                    onChange={(e) => setReplayTrailLength(Number(e.target.value))}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+
+                <h2 className="text-xl font-semibold mb-4">Current Mouse State</h2>
+                <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-sm">
+                  <code>{JSON.stringify(mouseState, null, 2)}</code>
+                </pre>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold mb-4">Recording Details</h2>
+            <div className="space-y-4">
+              <p>Recorded points: {mousePath.length} (Est. size: {estSize})</p>
+              <div className="space-y-2">
+                <label className="block font-medium">Paste mouse actions to replay:</label>
+                <textarea
+                  className="w-full h-32 p-2 border rounded resize-none"
+                  onChange={onTextAreaChange}
+                  placeholder="Paste JSON mouse actions here..."
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block font-medium">Component Code:</label>
+                <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-sm">
+                  <code>{code}</code>
+                </pre>
+              </div>
+              <div className="space-y-2">
+                <label className="block font-medium">Recorded action:</label>
+                <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-sm">
+                  <code>{JSON.stringify([recordedMouseAction], null, 2)}</code>
+                </pre>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="mt-4">
-          <pre>
-            {`Current Mouse Props:
-mouseActions: ${JSON.stringify(recordedMouseAction)}
-setMouseActions: function(actions)
-setMouseX: function(x)
-setMouseY: function(y)
-recording: ${recording}
-clearRecording: ${clearRecording}
-replaying: ${replaying}
-recordWithTrail: true
-recordTrailLength: undefined
-replayTrailLength: undefined
-replayWithTrail: undefined
-onReplayComplete: undefined
-leftClickAnimation: undefined
-rightClickAnimation: undefined
-customLeftClickAnimation: undefined
-customRightClickAnimation: undefined
-interactWithElements: undefined`}
-          </pre>
-          <p>
-            Recorded points: {mousePath.length} (Est. size in browser: {estSize}
-            )
-          </p>
-          <p>
-            Mouse Position: {mouseX}, {mouseY}
-          </p>
-          <p>Mouse actions to drive mouse:</p>
-          <pre>{JSON.stringify(mouseActions, null, 2)}</pre>
-          <p>Recorded mouse action (in 'abstracted form'):</p>
-          <pre>{JSON.stringify([recordedMouseAction], null, 2)}</pre>
-          <p>Now the fun begins: paste in any abstracted mouse action to drive the mouse on this page:</p>
-          <textarea onChange={onTextAreaChange} />
+        <div className="mt-8 border rounded-lg p-4">
+          <GeometricShapes />
         </div>
       </div>
       <Mouse
+        mode={mode}
+        interactWithElements={interactWithElements}
         mouseActions={mouseActions}
-        recording={recording}
         clearRecording={clearRecording}
-        replaying={replaying}
-        recordWithTrail={true}
+        onReplayComplete={() => setReplaying(false)}
+        recordWithTrail={recordWithTrail}
+        replayWithTrail={replayWithTrail}
+        recordTrailLength={recordTrailLength}
+        replayTrailLength={replayTrailLength}
         setRecordedMouseAction={setRecordedMouseAction}
-        setMouseX={setMouseX}
-        setMouseY={setMouseY} />
-      <GeometricShapes />
+        setMouseState={setMouseState}
+      />
     </>
   );
 };
