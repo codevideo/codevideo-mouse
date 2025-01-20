@@ -1,5 +1,5 @@
-import { MouseAction } from "@fullstackcraftllc/codevideo-types";
-import { IMouseSnapshot, IMouseState } from "./IMouseSnapshot";
+import { IMouseSnapshot, MouseAction } from "@fullstackcraftllc/codevideo-types";
+import { IMouseState } from "./IMouseSnapshot";
 import { IPoint } from "./IPoint";
 
 export interface IUseMousePositionReturn {

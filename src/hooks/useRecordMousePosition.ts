@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { IMouseSnapshot, IMouseState } from "../interfaces/IMouseSnapshot";
+import { IMouseState } from "../interfaces/IMouseSnapshot";
 import { IPoint } from "../interfaces/IPoint";
 import { IUseMousePositionReturn } from "../interfaces/IUseMousePositionReturn";
-import { MouseAction } from "@fullstackcraftllc/codevideo-types"
+import { IMouseSnapshot, MouseAction } from "@fullstackcraftllc/codevideo-types"
 import { convertAbstractedActionToSnapshots } from "src/utils/convertAbstractedActionToSnapshots";
 
 export interface IRecordMousePositionProps {

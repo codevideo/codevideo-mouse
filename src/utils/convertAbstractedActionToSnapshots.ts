@@ -1,5 +1,4 @@
-import { MouseAction } from "@fullstackcraftllc/codevideo-types";
-import { IMouseSnapshot } from "src/interfaces/IMouseSnapshot";
+import { IMouseSnapshot, MouseAction } from "@fullstackcraftllc/codevideo-types";
 
 export const convertAbstractedActionToSnapshots = (action: MouseAction): IMouseSnapshot[] => {
     // pull off the value and parse it - it is just a giant JSON array of IMouseSnapshot

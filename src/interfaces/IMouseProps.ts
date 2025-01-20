@@ -1,6 +1,5 @@
 import { ReactNode } from 'react';
-import { MouseAction, GUIMode } from '@fullstackcraftllc/codevideo-types';
-import { IMouseSnapshot } from './IMouseSnapshot';
+import { MouseAction, GUIMode, IMouseSnapshot } from '@fullstackcraftllc/codevideo-types';
 
 export interface IMouseProps {
     mode?: GUIMode;

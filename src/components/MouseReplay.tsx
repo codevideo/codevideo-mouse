@@ -1,10 +1,10 @@
 import { cloneElement, ReactElement, ReactNode, useEffect, useRef, useState } from "react";
-import { IMouseSnapshot } from "../interfaces/IMouseSnapshot";
 import { IPoint } from "../interfaces/IPoint";
 import { DefaultCursor } from "./cursors/DefaultCursor";
 import { PointerCursor } from "./cursors/PointerCursor";
 import { TextSelectCursor } from "./cursors/TextSelectCursor";
 import { IMouseContextManifest } from "../interfaces/IMouseContextManifest";
+import { IMouseSnapshot } from "@fullstackcraftllc/codevideo-types";
 
 export interface IMouseReplayProps {
   mouseContextManifest: Array<IMouseContextManifest>;

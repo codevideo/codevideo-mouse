@@ -1,5 +1,4 @@
-import { MouseAction } from "@fullstackcraftllc/codevideo-types";
-import { IMouseSnapshot } from "src/interfaces/IMouseSnapshot";
+import { IMouseSnapshot, MouseAction } from "@fullstackcraftllc/codevideo-types";
 
 export const convertGranularActionsToSnapshots = (actions: MouseAction[]): IMouseSnapshot[] => {
     // for each action, rebuild a mouse snapshot

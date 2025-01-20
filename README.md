@@ -1,5 +1,7 @@
 # @fullstackcraft/codevideo-mouse
 
+![NPM Version](https://img.shields.io/npm/v/@fullstackcraftllc/codevideo-mouse)
+
 Record your mouse moves to the pixel, capturing movement timing, speed, and even left-clicks, right-clicks, or highlights!
 
 `codevideo-mouse` exports a single React component, `Mouse`, which can be used in a variety of ways to record, replay, and visualize mouse movements.

@@ -1,22 +1,4 @@
-import { IPoint } from "./IPoint";
-
-export interface IMouseSnapshot extends IPoint {
-  x: number;
-  y: number;
-  timestamp: number;
-  type: 'move' | 'down' | 'up' | 'scroll';
-  button?: number;    // 0: left, 1: middle, 2: right
-  buttonStates: {
-    left: boolean;
-    right: boolean;
-    middle: boolean;
-  };
-  scrollPosition: {
-    x: number;
-    y: number;
-  };
-  scrollDelta?: number;
-}
+import { IMouseSnapshot, IPoint } from "@fullstackcraftllc/codevideo-types";
 
 export interface IMouseState {
   position: IPoint;
