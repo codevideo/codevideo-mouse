@@ -49,7 +49,7 @@ export const useRecordMousePosition = (
 
   const [snapshots, setSnapshots] = useState<IMouseSnapshot[]>([]);
   const [trailPoints, setTrailPoints] = useState<IPoint[]>([]);
-  const [mouseAction, setMouseAction] = useState<MouseAction>({name: "mouse", value: ""})
+  const [mouseAction, setMouseAction] = useState<MouseAction>({name: "mouse-move", value: ""})
   const lastTimeRef = useRef<number>(Date.now());
 
   const createSnapshot = (
@@ -210,14 +210,14 @@ export const useRecordMousePosition = (
     setSnapshots([]);
     setTrailPoints([]);
     lastTimeRef.current = Date.now();
-    setMouseAction({name: "mouse", value: ""});
+    setMouseAction({name: "mouse-move", value: ""});
   }, [clearRecording]);
 
   // any time anything changes, update the mouseAction that we return
   useEffect(() => {
     setMouseAction({
-      // use the "abstracted" action name of just "mouse"
-      name: "mouse",
+      // use the "abstracted" action name of just "mouse-move" for now
+      name: "mouse-move",
       value: JSON.stringify(snapshots)
     })
       
@@ -227,7 +227,7 @@ export const useRecordMousePosition = (
   useEffect(() => {
     if (mouseActions && mouseActions.length > 0) {
       // mouse action driver - different ways here is the easy one:
-      if (mouseActions.length === 1 && mouseActions[0].name === "mouse") {
+      if (mouseActions.length === 1 && mouseActions[0].name === "mouse-move") {
         const snapshots = convertAbstractedActionToSnapshots(mouseActions[0]);
         setSnapshots(snapshots);
       } else if (mouseActions.length > 0) {
