@@ -2,12 +2,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { IMouseState } from "../interfaces/IMouseSnapshot";
 import { IPoint } from "../interfaces/IPoint";
 import { IUseMousePositionReturn } from "../interfaces/IUseMousePositionReturn";
-import { IMouseSnapshot, MouseAction } from "@fullstackcraftllc/codevideo-types"
+import { IAction, IMouseSnapshot, MouseAction, isMouseAction } from "@fullstackcraftllc/codevideo-types"
 import { convertAbstractedActionToSnapshots } from "src/utils/convertAbstractedActionToSnapshots";
 
 export interface IRecordMousePositionProps {
   recording?: boolean;
-  mouseActions?: Array<MouseAction>;
+  actions?: Array<IAction>;
   recordWithTrail?: boolean;
   recordTrailLength?: number;
   replayTrailLength?: number;
@@ -22,7 +22,7 @@ export const useRecordMousePosition = (
 ): IUseMousePositionReturn => {
   const {
     recording = false,
-    mouseActions = [],
+    actions = [],
     recordWithTrail = false,
     recordTrailLength = 500,
     replayTrailLength = 500,
@@ -223,21 +223,21 @@ export const useRecordMousePosition = (
       
   }, [recording, recordWithTrail, recordTrailLength, replayTrailLength, mouseStateInternal])
 
-  // mouseActions change
+  // actions change
   useEffect(() => {
-    if (mouseActions && mouseActions.length > 0) {
+    if (actions && actions.length > 0) {
       // mouse action driver - different ways here is the easy one:
-      if (mouseActions.length === 1 && mouseActions[0].name === "mouse-move") {
-        const snapshots = convertAbstractedActionToSnapshots(mouseActions[0]);
+      if (actions.length === 1 && actions[0].name === "mouse-move" && isMouseAction(actions[0])) {
+        const snapshots = convertAbstractedActionToSnapshots(actions[0]);
         setSnapshots(snapshots);
-      } else if (mouseActions.length > 0) {
+      } else if (actions.length > 0) {
         // we have composite actions like 'double-click' etc etc.
         alert("codevideo-mouse is only supported as a driver from the single abstracted action name 'mouse', i.e. a JSON with shape [ { name: 'mouse', action: '...' } ]")
         // TODO: finish and activate:
-        // convertGranularActionsToSnapshots(mouseActions);
+        // convertGranularActionsToSnapshots(actions);
       }
     }
-  }, [mouseActions]);
+  }, [actions]);
 
   // any time the mouseAction changes, update the parent
   useEffect(() => {

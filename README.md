@@ -11,10 +11,10 @@ Record your mouse moves to the pixel, capturing movement timing, speed, and even
 ```tsx
 import React, { useState } from 'react';
 import { IAction } from '@fullstackcraft/codevideo-types';
-import { IMouseAction } from '@fullstackcraft/codevideo-mouse';
+import { IAction } from '@fullstackcraft/codevideo-mouse';
 
 export default App = () => {
-    const [mouseActions, setMouseActions] = useState<Array<IMouseAction>>([]);
+    const [mouseActions, setMouseActions] = useState<Array<IAction>>([]);
     const [recording, setRecording] = useState(false);
     const [replaying, setReplaying] = useState(false);
     return (
@@ -32,8 +32,8 @@ All props that can be passed to Mouse are defined in [`IMouseProps`](./src/inter
 
 ```typescript
 interface IMouseProps {
-    mouseActions?: Array<IMouseAction>; // Optional, an array of mouse actions to replay. Useful for when the mouse is in "driver" mode, and you want to replay the mouse actions
-    setMouseActions?: (actions: Array<IMouseAction>) => void; // Optional, but essential if you need to interface with other codevideo components, such as video making and so on. This is the function to set the mouse actions as they are recorded
+    mouseActions?: Array<IAction>; // Optional, an array of mouse actions to replay. Useful for when the mouse is in "driver" mode, and you want to replay the mouse actions
+    setMouseActions?: (actions: Array<IAction>) => void; // Optional, but essential if you need to interface with other codevideo components, such as video making and so on. This is the function to set the mouse actions as they are recorded
     setMouseX?: (x: number) => void;
     setMouseY?: (y: number) => void;
     recording?: boolean; // Whether or not to record mouse movements

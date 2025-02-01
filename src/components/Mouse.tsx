@@ -10,7 +10,7 @@ export function Mouse(props: IMouseProps) {
   const {
     mode,
     clearRecording,
-    mouseActions,
+    actions,
     setRecordedMouseAction,
     setRecordedSnapshots,
     recordWithTrail,
@@ -34,7 +34,7 @@ export function Mouse(props: IMouseProps) {
     trailPoints,
   } = useRecordMousePosition({
     recording,
-    mouseActions,
+    actions,
     recordWithTrail,
     recordTrailLength,
     replayTrailLength,
@@ -61,13 +61,13 @@ export function Mouse(props: IMouseProps) {
 
   // a change in mouseActions forces replay
   useEffect(() => {
-    if (mouseActions && mouseActions.length > 0) {
+    if (actions && actions.length > 0) {
       // Stop any ongoing recording
       setRecording(false);
       // Start replaying
       setReplaying(true);
     }
-  }, [mouseActions]);
+  }, [actions]);
 
   // don't render anything if we are not recording or replaying
   if (!recording && !replaying) {

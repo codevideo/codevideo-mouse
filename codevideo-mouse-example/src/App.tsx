@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { IMouseSnapshot, Mouse } from "@fullstackcraftllc/codevideo-mouse";
+import { Mouse } from "@fullstackcraftllc/codevideo-mouse";
 import { GeometricShapes } from "./components/GeometricShapes.tsx";
-import { MouseAction } from "@fullstackcraftllc/codevideo-types";
+import { IAction, IMouseSnapshot } from "@fullstackcraftllc/codevideo-types";
 
 const App = () => {
-  const [recordedMouseAction, setRecordedMouseAction] = useState<MouseAction>();
+  const [recordedMouseAction, setRecordedMouseAction] = useState<IAction>();
   const [recordedSnapshots, setRecordedSnapshots] = useState<Array<IMouseSnapshot>>();
-  const [mouseActions, setMouseActions] = useState<Array<MouseAction>>([]);
+  const [mouseActions, setMouseActions] = useState<Array<IAction>>([]);
   const [recording, setRecording] = useState(false);
   const [clearRecording, setClearRecording] = useState(false);
   const [replaying, setReplaying] = useState(false);
@@ -28,7 +28,7 @@ const App = () => {
 
   const onTextAreaChange = (e) => {
     try {
-      const parsedActions = JSON.parse(e.target.value) as MouseAction[];
+      const parsedActions = JSON.parse(e.target.value) as IAction[];
       if (!Array.isArray(parsedActions)) {
         console.error('Input must be an array of mouse actions');
         return;
@@ -224,7 +224,7 @@ const App = () => {
       <Mouse
         mode={mode}
         interactWithElements={interactWithElements}
-        mouseActions={mouseActions}
+        actions={mouseActions}
         clearRecording={clearRecording}
         onReplayComplete={() => setReplaying(false)}
         recordWithTrail={recordWithTrail}
